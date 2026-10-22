@@ -1,45 +1,38 @@
-# QuantVexa Signals
+# QuantVexa Pattern Analyzer
 
-Standalone signal system covering **all signal types** we built, in **2 files**.
+Finds **100% repeating candle patterns** for 13 currencies, grouped by day of week, across 20 candle durations (1–20 minutes).
 
 ## Files
-- `server.js` — Node.js HTTP server (no dependencies, pure `http` module)
-- `index.html` — Self-contained frontend (HTML + CSS + JS in one file)
+- `analyzer.py` — analysis script (run it to regenerate all output files)
+- `1minute.txt` … `20minute.txt` — one file per candle duration, listing every 100% repeating pattern found at that duration
 
-## Signal Types
-1. **NORMAL signals** — short-duration (1-3 min) BUY/SELL, available to all levels
-2. **FUTURE signals** — long-duration (5-15 min) premium early-access, Level 1+ only
+## What it does
+1. Generates (or loads) 1-minute candle data for **13 currencies** across **8 weeks**
+2. For each duration **D** (1 to 20 minutes):
+   - Aggregates 1-min candles into D-min candles
+   - Groups them by **weekday** (Monday → Sunday, separately)
+   - Scans for sequences of consecutive **UP** or **DOWN** candles that appear at the **same clock-time** in **100% of weeks**
+   - Writes the results to `Dminute.txt`
+3. Sub-runs contained within a longer run are removed — only the **longest** pattern per time range is kept
 
-## Per-Level Daily Allowance (admin-configurable)
-| Level | Label          | Normal/day | Future/day |
-|-------|----------------|------------|------------|
-| 0     | Normal Users   | 5          | 0          |
-| 1     | Pro            | 10         | 2          |
-| 2     | Pro+           | 20         | 5          |
-| 3     | Elite          | 50         | 15         |
+## Output format (each .txt file)
+```
+SYMBOL         | WEEKDAY   | START-END UTC  | DIR  | CANDLES | SPAN    | MATCH
+EURUSD-OTC     | Friday    | 00:00-01:00    | UP   | 60 candles | 60 min | 100% (8/8 weeks)
+```
 
 ## Timezone
-**All timestamps are UTC** (candle timezone). No browser timezone detection anywhere.
+**All times are UTC** (candle timezone). No browser timezone logic anywhere.
 
 ## Run
 ```bash
-node server.js
-# Open http://localhost:8080
+python3 analyzer.py
 ```
+Produces 20 files (`1minute.txt` through `20minute.txt`) in the current directory.
 
-## API
-| Method | Path | Description |
-|--------|------|-------------|
-| GET    | `/health` | Health check |
-| GET    | `/api/admin/signal-config` | Full per-level config |
-| PUT    | `/api/admin/signal-config/:level` | Update one level `{normalSignals, futureSignals}` |
-| POST   | `/api/admin/users/:tg_id/promote` | Set user level (0-3) |
-| GET    | `/api/me/allowance?tg_id=ID` | User's own allowance + used today |
-| GET    | `/api/signals?tg_id=ID&limit=N` | Signals visible to that user |
-| GET    | `/api/signals/:id` | Single signal |
-
-## How it works
-- Server generates a new **normal** signal every ~20s and a new **future** signal every ~60s
-- Signals expire after their duration and get a random `win`/`loss` result (demo)
-- Frontend polls `/api/signals` every 3s and re-renders countdowns every 1s
-- Admin can change any level's allowance via the top bar — changes apply instantly
+## Using real candle data
+Replace the `generate_candles()` function with a loader that reads your CSV/JSON and returns:
+```python
+{ symbol: [ {t, o, h, l, c, dir}, ... ] }
+```
+where `t` = Unix seconds (UTC), `dir` = `'UP'` or `'DOWN'`. Everything else stays the same.

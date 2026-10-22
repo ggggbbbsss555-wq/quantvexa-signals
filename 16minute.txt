@@ -1,0 +1,16 @@
+# QuantVexa — 100% Repeating Candle Patterns
+# Duration: 16 minute(s) per candle
+# Symbols: 13 currencies
+# Data: 8 weeks
+# All times: UTC (candle timezone)
+# Method: group candles by weekday, find consecutive UP/DOWN runs
+#         that appear at the same clock-time in 100% of weeks
+# Patterns found: 4
+# ==========================================================================================
+# SYMBOL         | WEEKDAY   | START-END      | DIR  | CANDLES | SPAN     | MATCH
+# ------------------------------------------------------------------------------------------
+
+  BTC/USDT       | Sunday    | 00:00-01:04 UTC | UP   |  4 candles |  64 min  | 100% (8/8 weeks)
+  ETH/USDT       | Wednesday | 00:00-00:32 UTC | UP   |  2 candles |  32 min  | 100% (8/8 weeks)
+  EURUSD-OTC     | Friday    | 00:00-00:48 UTC | UP   |  3 candles |  48 min  | 100% (8/8 weeks)
+  GBPUSD-OTC     | Monday    | 00:00-00:48 UTC | DOWN |  3 candles |  48 min  | 100% (8/8 weeks)
